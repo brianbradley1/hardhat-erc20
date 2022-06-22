@@ -43,17 +43,34 @@ contract ManualToken {
         address _from,
         address _to,
         uint256 _value
-    ) public returns (bool success) {
+    ) internal {
+        // Prevent transfer to 0x0 address. Use the burn() function instead
+        require(_to != address(0x0));
         // Check if the sender has enough
         require(balanceOf[_from] >= _value);
+        // Check for overflows
+        require(balanceOf[_to] + _value >= balanceOf[_to]);
+        // Save this for an assertion in the future
+        uint256 previousBalances = balanceOf[_from] + balanceOf[_to];
         // Subtract from the sender
         balanceOf[_from] -= _value;
         // Add the same to the recipient
         balanceOf[_to] += _value;
         emit Transfer(_from, _to, _value);
+        // Asserts are used to use static analysis to find bugs in your code. They should never fail
+        assert(balanceOf[_from] + balanceOf[_to] == previousBalances);
+    }
+
+    function transfer(address _to, uint256 _value)
+        public
+        returns (bool success)
+    {
+        _transfer(msg.sender, _to, _value);
         return true;
     }
 
+    // The transferFrom function is the peer of the approve function
+    // It allows a delegate approved for withdrawal to transfer owner funds to a third-party account.
     function transferFrom(
         address _from,
         address _to,
@@ -65,8 +82,8 @@ contract ManualToken {
         return true;
     }
 
-    // allow an owner i.e. msg.sender to approve a delegate account — possibly the marketplace itself
-    // to withdraw tokens from his account and to transfer them to other accounts.
+    // allow an owner to approve a delegate account to withdraw tokens from his account and
+    // to transfer them to other accounts.
     function approve(address _spender, uint256 _value)
         public
         returns (bool success)
