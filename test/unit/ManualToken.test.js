@@ -22,6 +22,16 @@ describe("ManualToken Unit Test", function () {
   });
 
   describe("transfer", function () {
+    it("reverts when you transfer to empty address", async () => {
+      const tokensToSend = ethers.utils.parseEther("100");
+      await expect(
+        manualTokenDeployer.transfer(
+          "0x0000000000000000000000000000000000000000",
+          tokensToSend
+        )
+      ).to.be.reverted;
+    });
+
     it("reverts when you dont pay enough", async () => {
       // need to transfer 100 tokens to user1 first as deployer balance too high to test condition below
       const tokensToSend = ethers.utils.parseEther("100");
@@ -29,12 +39,6 @@ describe("ManualToken Unit Test", function () {
       await expect(
         manualTokenUser1.transfer(deployer, ethers.utils.parseEther("10000"))
       ).to.be.reverted;
-    });
-
-    it("reverts when you transfer to incorrect address", async () => {
-      const tokensToSend = ethers.utils.parseEther("100");
-      await expect(manualTokenDeployer.transfer("0x0", tokensToSend)).to.be
-        .reverted;
     });
 
     it("Should be able to transfer funds from one account to another", async function () {
@@ -49,6 +53,21 @@ describe("ManualToken Unit Test", function () {
         manualTokenDeployer,
         "Transfer"
       );
+    });
+
+    it("Check balances match after transfer", async function () {
+      const previousBalances =
+        BigInt(await manualTokenDeployer.balanceOf(deployer)) +
+        BigInt(await manualTokenDeployer.balanceOf(user1));
+
+      const tokensToSend = ethers.utils.parseEther("100");
+      await manualTokenDeployer.transfer(user1, tokensToSend);
+
+      const newBalances =
+        BigInt(await manualTokenDeployer.balanceOf(deployer)) +
+        BigInt(await manualTokenDeployer.balanceOf(user1));
+
+      expect(previousBalances).to.equal(newBalances);
     });
   });
 
@@ -97,6 +116,11 @@ describe("ManualToken Unit Test", function () {
   });
 
   describe("burn", function () {
+    it("reverts when sender doesnt have enough", async () => {
+      const tokensToBurn = ethers.utils.parseEther("10000");
+      await expect(manualTokenUser1.burn(tokensToBurn)).to.be.reverted;
+    });
+
     it("Should be able to burn tokens", async function () {
       const tokensToBurn = ethers.utils.parseEther("100");
 
