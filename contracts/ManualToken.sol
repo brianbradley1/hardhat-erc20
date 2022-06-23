@@ -27,6 +27,11 @@ contract ManualToken {
     // This notifies clients/frontend apps about the amount burnt
     event Burn(address indexed from, uint256 value);
 
+    /**
+     * Constructor function
+     *
+     * Initializes contract with initial supply tokens to the creator of the contract
+     */
     constructor(
         uint256 initialSupply,
         string memory tokenName, // e.g.  Uniswap
@@ -38,7 +43,9 @@ contract ManualToken {
         symbol = tokenSymbol; // Set the symbol for display purposes
     }
 
-    // Internal transfer, only can be called by this contract
+    /**
+     * Internal transfer, only can be called by this contract
+     */
     function _transfer(
         address _from,
         address _to,
@@ -61,6 +68,14 @@ contract ManualToken {
         assert(balanceOf[_from] + balanceOf[_to] == previousBalances);
     }
 
+    /**
+     * Transfer tokens
+     *
+     * Send `_value` tokens to `_to` from your account
+     *
+     * @param _to The address of the recipient
+     * @param _value the amount to send
+     */
     function transfer(address _to, uint256 _value)
         public
         returns (bool success)
@@ -69,8 +84,15 @@ contract ManualToken {
         return true;
     }
 
-    // The transferFrom function is the peer of the approve function
-    // It allows a delegate approved for withdrawal to transfer owner funds to a third-party account.
+    /**
+     * Transfer tokens from other address
+     *
+     * Send `_value` tokens to `_to` on behalf of `_from`
+     *
+     * @param _from The address of the sender
+     * @param _to The address of the recipient
+     * @param _value the amount to send
+     */
     function transferFrom(
         address _from,
         address _to,
@@ -82,8 +104,14 @@ contract ManualToken {
         return true;
     }
 
-    // allow an owner to approve a delegate account to withdraw tokens from his account and
-    // to transfer them to other accounts.
+    /**
+     * Set allowance for other address
+     *
+     * Allows `_spender` to spend no more than `_value` tokens on your behalf
+     *
+     * @param _spender The address authorized to spend
+     * @param _value the max amount they can spend
+     */
     function approve(address _spender, uint256 _value)
         public
         returns (bool success)
@@ -93,6 +121,13 @@ contract ManualToken {
         return true;
     }
 
+    /**
+     * Destroy tokens
+     *
+     * Remove `_value` tokens from the system irreversibly
+     *
+     * @param _value the amount of money to burn
+     */
     function burn(uint256 _value) public returns (bool success) {
         require(balanceOf[msg.sender] >= _value); // Check if the sender has enough
         balanceOf[msg.sender] -= _value; // Subtract from the sender
